@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soil Health Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+    .sensor-card {
+        transition: transform 0.2s;
+    }
+    .sensor-card:hover {
+        transform: translateY(-5px);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    @media (max-width: 640px) {
+        .chart-container {
+            height: 200px;
+        }
+    }
+</style>
+<body class="bg-gray-50">
+    <!-- Navbar -->
+    <nav class="bg-green-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">SoilHealth Monitor</h1>
+            <div class="flex items-center space-x-4">
+                <select class="bg-green-700 text-white p-2 rounded">
+                    <option>English</option>
+                    <option>Español</option>
+                    <option>हिंदी</option>
+                </select>
+                <button class="p-2"><i class="bi bi-bell"></i></button>
+                <button class="p-2"><i class="bi bi-person-circle"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-4">
+        <!-- Plot Selection -->
+        <div class="mb-6">
+            <select id="plotSelector" class="w-full md:w-64 p-2 border rounded">
+                <option>Select Plot</option>
+                <option>North Field (2.5 acres)</option>
+                <option>South Field (3.1 acres)</option>
+            </select>
+        </div>
+
+        <!-- Sensor Data Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="sensor-card bg-white p-4 rounded-lg shadow">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500">Soil Moisture</p>
+                        <h2 class="text-2xl font-bold">65%</h2>
+                    </div>
+                    <i class="bi bi-droplet text-blue-500 text-3xl"></i>
+                </div>
+            </div>
+            <div class="sensor-card bg-white p-4 rounded-lg shadow">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500">Soil pH</p>
+                        <h2 class="text-2xl font-bold">6.8</h2>
+                    </div>
+                    <i class="bi bi-calendar2-check text-green-500 text-3xl"></i>
+                </div>
+            </div>
+            <div class="sensor-card bg-white p-4 rounded-lg shadow">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500">Temperature</p>
+                        <h2 class="text-2xl font-bold">24°C</h2>
+                    </div>
+                    <i class="bi bi-thermometer-half text-red-500 text-3xl"></i>
+                </div>
+            </div>
+            <div class="sensor-card bg-white p-4 rounded-lg shadow">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500">Nitrogen Level</p>
+                        <h2 class="text-2xl font-bold">Medium</h2>
+                    </div>
+                    <i class="bi bi-calculator text-purple-500 text-3xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-4">Soil Moisture Trend</h3>
+                <div class="chart-container">
+                    <canvas id="moistureChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-4">Temperature Variation</h3>
+                <div class="chart-container">
+                    <canvas id="temperatureChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insights & Recommendations -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6">
+            <h3 class="text-lg font-semibold mb-4">AI Insights</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="border-l-4 border-green-500 pl-4">
+                    <h4 class="font-medium">Soil Health Status</h4>
+                    <p class="text-gray-600">Your soil moisture levels are optimal. Consider maintaining current irrigation schedule.</p>
+                </div>
+                <div class="border-l-4 border-yellow-500 pl-4">
+                    <h4 class="font-medium">Recommendations</h4>
+                    <p class="text-gray-600">Add nitrogen-rich fertilizer within the next 7 days for optimal growth.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disease Detection -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6">
+            <h3 class="text-lg font-semibold mb-4">Crop Disease Detection</h3>
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <label class="block mb-2">Upload Crop Image</label>
+                    <input type="file" accept="image/*" class="w-full p-2 border rounded" id="cropImage">
+                </div>
+                <button class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                    Analyze Image
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Charts
+        function createChart(ctx, label, data, color) {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        borderColor: color,
+                        tension: 0.4,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                }
+            });
+        }
+
+        // Create sample charts
+        document.addEventListener('DOMContentLoaded', () => {
+            const moistureCtx = document.getElementById('moistureChart').getContext('2d');
+            const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+
+            createChart(moistureCtx, 'Moisture %', [62, 64, 65, 63, 66, 65, 65], '#3B82F6');
+            createChart(temperatureCtx, 'Temperature °C', [22, 23, 25, 24, 23, 24, 24], '#EF4444');
+        });
+
+        // Image upload preview
+        document.getElementById('cropImage').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                // Here you would typically implement image processing and AI analysis
+                console.log('Image uploaded for analysis');
+            }
+        });
+
+        // Plot selector
+        document.getElementById('plotSelector').addEventListener('change', function(e) {
+            // Here you would typically fetch and update data for the selected plot
+            console.log('Selected plot:', e.target.value);
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
